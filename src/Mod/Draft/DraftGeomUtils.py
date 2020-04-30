@@ -1187,7 +1187,8 @@ def getSplineNormal(edge):
     v1 = midPoint - startPoint
     v2 = midPoint - endPoint
     n = v1.cross(v2)
-    n.normalize()
+    if not isNull(n):
+        n.normalize()
     return n
 
 def getNormal(shape):
@@ -1718,21 +1719,23 @@ def isCoplanar(faces, tolerance=0):
 
 def isPlanar(shape):
     """Check if the given shape or list of points is planar."""
-    n = getNormal(shape)
-    if not n:
-        return False
     if isinstance(shape,list):
         if len(shape) <= 3:
             return True
-        else:
-            for v in shape[3:]:
-                pv = v.sub(shape[0])
-                rv = DraftVecUtils.project(pv,n)
-                if not DraftVecUtils.isNull(rv):
-                    return False
+        n = getNormal(shape)
+        if not n:
+            return False
+        for v in shape[3:]:
+            pv = v.sub(shape[0])
+            rv = DraftVecUtils.project(pv,n)
+            if not DraftVecUtils.isNull(rv):
+                return False
     else:
         if len(shape.Vertexes) <= 3:
             return True
+        n = getNormal(shape)
+        if not n:
+            return False
         for p in shape.Vertexes[1:]:
             pv = p.Point.sub(shape.Vertexes[0].Point)
             rv = DraftVecUtils.project(pv,n)
